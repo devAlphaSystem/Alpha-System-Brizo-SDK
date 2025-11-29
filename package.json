@@ -1,0 +1,28 @@
+{
+  "name": "@alphasystem/brizo",
+  "version": "0.1.0",
+  "description": "Official Brizo SDK for Node.js - Simple cloud storage integration",
+  "main": "src/index.js",
+  "types": "src/index.d.ts",
+  "scripts": {
+    "format": "prettier --write ."
+  },
+  "keywords": [
+    "brizo",
+    "cloud-storage",
+    "file-storage",
+    "s3-compatible",
+    "file-upload",
+    "sdk",
+    "api-client"
+  ],
+  "author": "Alpha System",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/devAlphaSystem/Alpha-System-Brizo-SDK.git"
+  },
+  "devDependencies": {
+    "prettier": "^3.7.2"
+  }
+}
