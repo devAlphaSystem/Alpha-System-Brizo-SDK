@@ -48,17 +48,23 @@ console.log('Total files:', files.totalItems);
   - [List Files](#list-files)
   - [Get File Info](#get-file-info)
   - [Move File](#move-file)
+  - [Rename File](#rename-file)
   - [Delete File](#delete-file)
   - [Get Download URL](#get-download-url)
+  - [Get Stream URL](#get-stream-url)
 - [Folders](#folders)
   - [Create Folder](#create-folder)
   - [Create Folder Path](#create-folder-path)
   - [List Folders](#list-folders)
   - [Rename Folder](#rename-folder)
+  - [Move Folder](#move-folder)
   - [Delete Folder](#delete-folder)
 - [S3 Compatibility](#s3-compatibility)
   - [Create S3 Credentials](#create-s3-credentials)
   - [Use with AWS SDK](#use-with-aws-sdk)
+- [Metrics](#metrics)
+  - [Get All Metrics](#get-all-metrics)
+  - [Usage Information](#usage-information)
 - [Error Handling](#error-handling)
 - [TypeScript](#typescript)
 - [API Reference](#api-reference)
@@ -237,6 +243,12 @@ await brizo.files.move('file-id', 'folder-id');
 await brizo.files.move('file-id', 'root');
 ```
 
+### Rename File
+
+```javascript
+await brizo.files.rename('file-id', 'new-filename.jpg');
+```
+
 ### Delete File
 
 ```javascript
@@ -250,6 +262,17 @@ const url = await brizo.files.getDownloadUrl('file-id');
 
 // Use the URL to download the file
 // Note: This returns a URL that redirects to a signed download URL
+```
+
+### Get Stream URL
+
+Get a URL for inline display (e.g., images, videos in browser):
+
+```javascript
+const url = await brizo.files.getStreamUrl('file-id');
+
+// Use for displaying images/videos directly in browser
+console.log(`<img src="${url}" />`);
 ```
 
 ### Get Share URL
@@ -319,6 +342,18 @@ const path = await brizo.folders.getPath('folder-id');
 
 ```javascript
 await brizo.folders.rename('folder-id', 'New Name');
+```
+
+### Move Folder
+
+```javascript
+// Move to another folder
+await brizo.folders.move('folder-id', 'new-parent-folder-id');
+
+// Move to root
+await brizo.folders.move('folder-id', 'root');
+// or
+await brizo.folders.move('folder-id', '');
 ```
 
 ### Delete Folder
@@ -402,6 +437,55 @@ console.log({
   bucket: info.bucket,
   region: info.region
 });
+```
+
+## Metrics
+
+Track storage usage, bandwidth, and API requests.
+
+### Get All Metrics
+
+```javascript
+const metrics = await brizo.metrics.get();
+
+console.log({
+  totalUploads: metrics.totalUploads,
+  filesStored: metrics.filesStored,
+  storageUsed: metrics.storageUsed,      // e.g., "2.5 GB"
+  storageLimit: metrics.storageLimit,    // e.g., "10 GB" or null if unlimited
+  bandwidthUsed: metrics.bandwidthUsed,  // e.g., "15.3 GB"
+  bandwidthLimit: metrics.bandwidthLimit,
+  apiRequests: metrics.apiRequests,
+  plan: metrics.plan                     // { id, slug, name }
+});
+```
+
+### Usage Information
+
+```javascript
+// Get storage usage details
+const storage = await brizo.metrics.getStorageUsage();
+console.log({
+  used: storage.used,              // bytes
+  usedFormatted: storage.usedFormatted,  // "2.5 GB"
+  limit: storage.limit,            // bytes or null
+  limitFormatted: storage.limitFormatted,
+  percentage: storage.percentage   // 0-100
+});
+
+// Get bandwidth usage details
+const bandwidth = await brizo.metrics.getBandwidthUsage();
+console.log(bandwidth.percentage + '% of bandwidth used');
+
+// Get API requests usage
+const apiUsage = await brizo.metrics.getApiRequestsUsage();
+if (apiUsage.tracked) {
+  console.log(`${apiUsage.used} / ${apiUsage.limit} API requests`);
+}
+
+// Get upload statistics
+const stats = await brizo.metrics.getUploadStats();
+console.log(`Total uploads: ${stats.totalUploads}, Files stored: ${stats.filesStored}`);
 ```
 
 ## Error Handling
@@ -515,7 +599,9 @@ async function listImages(): Promise<File[]> {
 | `get(fileId)` | Get file info |
 | `delete(fileId)` | Delete a file |
 | `move(fileId, folderId)` | Move file to folder |
+| `rename(fileId, newName)` | Rename a file |
 | `getDownloadUrl(fileId)` | Get download URL |
+| `getStreamUrl(fileId)` | Get streaming URL (inline display) |
 | `getShareUrl(file)` | Get public share URL |
 
 ### Folders Module (`brizo.folders`)
@@ -529,6 +615,7 @@ async function listImages(): Promise<File[]> {
 | `get(folderId)` | Get folder info |
 | `getPath(folderId)` | Get folder breadcrumb |
 | `rename(folderId, name)` | Rename a folder |
+| `move(folderId, parentId?)` | Move folder to another parent |
 | `delete(folderId, options?)` | Delete a folder |
 
 ### S3 Credentials Module (`brizo.s3Credentials`)
@@ -541,6 +628,16 @@ async function listImages(): Promise<File[]> {
 | `delete(id)` | Delete credentials |
 | `getConnectionInfo()` | Get S3 endpoint info |
 | `getS3Config(credentials)` | Get AWS SDK config |
+
+### Metrics Module (`brizo.metrics`)
+
+| Method | Description |
+|--------|-------------|
+| `get()` | Get all metrics and statistics |
+| `getStorageUsage()` | Get storage usage details |
+| `getBandwidthUsage()` | Get bandwidth usage details |
+| `getApiRequestsUsage()` | Get API requests usage |
+| `getUploadStats()` | Get upload statistics |
 
 ## Requirements
 

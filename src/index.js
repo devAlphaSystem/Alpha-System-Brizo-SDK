@@ -10,6 +10,7 @@ const HttpClient = require("./http");
 const Files = require("./files");
 const Folders = require("./folders");
 const S3Credentials = require("./s3credentials");
+const Metrics = require("./metrics");
 const { BrizoError, AuthenticationError, NotFoundError, ValidationError, RateLimitError, LimitExceededError, UploadError } = require("./errors");
 
 /**
@@ -56,6 +57,7 @@ class Brizo {
     this.files = new Files(this._http);
     this.folders = new Folders(this._http);
     this.s3Credentials = new S3Credentials(this._http);
+    this.metrics = new Metrics(this._http);
   }
 
   /**
@@ -85,6 +87,7 @@ class Brizo {
     this.files = new Files(this._http);
     this.folders = new Folders(this._http);
     this.s3Credentials = new S3Credentials(this._http);
+    this.metrics = new Metrics(this._http);
   }
 
   /**

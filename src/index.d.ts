@@ -31,6 +31,11 @@ declare class Brizo {
   readonly s3Credentials: Brizo.S3Credentials;
 
   /**
+   * Metrics module for usage statistics
+   */
+  readonly metrics: Brizo.Metrics;
+
+  /**
    * Get the current API key (masked)
    */
   getApiKey(): string;
@@ -548,6 +553,16 @@ declare namespace Brizo {
      * Get public share URL for a file
      */
     getShareUrl(file: File): string | null;
+
+    /**
+     * Rename a file
+     */
+    rename(fileId: string, newName: string): Promise<File>;
+
+    /**
+     * Get a streaming URL for a file (inline display)
+     */
+    getStreamUrl(fileId: string): Promise<string>;
   }
 
   /**
@@ -578,6 +593,11 @@ declare namespace Brizo {
      * Rename a folder
      */
     rename(folderId: string, newName: string): Promise<Folder>;
+
+    /**
+     * Move a folder to a different parent folder
+     */
+    move(folderId: string, parentId?: string): Promise<Folder>;
 
     /**
      * Delete a folder
@@ -628,6 +648,180 @@ declare namespace Brizo {
      * Get S3 client configuration for AWS SDK
      */
     getS3Config(credentials: { accessKeyId: string; secretAccessKey: string }): Promise<S3ClientConfig>;
+  }
+
+  // ============================================================================
+  // Metrics Types
+  // ============================================================================
+
+  interface MetricsData {
+    /**
+     * Total number of uploads
+     */
+    totalUploads: number;
+
+    /**
+     * Number of files currently stored
+     */
+    filesStored: number;
+
+    /**
+     * Storage used (formatted string)
+     */
+    storageUsed: string;
+
+    /**
+     * Storage limit (formatted string or null if unlimited)
+     */
+    storageLimit: string | null;
+
+    /**
+     * Storage used in bytes
+     */
+    storageUsedRaw: number;
+
+    /**
+     * Storage limit in bytes (null if unlimited)
+     */
+    storageLimitRaw: number | null;
+
+    /**
+     * Bandwidth used (formatted string)
+     */
+    bandwidthUsed: string;
+
+    /**
+     * Bandwidth limit (formatted string or null if unlimited)
+     */
+    bandwidthLimit: string | null;
+
+    /**
+     * Bandwidth used in bytes
+     */
+    bandwidthUsedRaw: number;
+
+    /**
+     * Bandwidth limit in bytes (null if unlimited)
+     */
+    bandwidthLimitRaw: number | null;
+
+    /**
+     * API requests this month
+     */
+    apiRequests: number;
+
+    /**
+     * API requests limit (null if unlimited)
+     */
+    apiRequestsLimit: number | null;
+
+    /**
+     * Whether to show API requests card
+     */
+    showApiRequestsCard: boolean;
+
+    /**
+     * Current plan information
+     */
+    plan: {
+      id: string | null;
+      slug: string;
+      name: string;
+    };
+
+    /**
+     * Uploads chart data (last 30 days)
+     */
+    uploadsChartData: number[];
+
+    /**
+     * Bandwidth chart data in GB (last 30 days)
+     */
+    bandwidthChartData: number[];
+
+    /**
+     * Chart labels (dates)
+     */
+    chartLabels: string[];
+  }
+
+  interface UsageInfo {
+    /**
+     * Amount used
+     */
+    used: number;
+
+    /**
+     * Formatted usage string
+     */
+    usedFormatted: string;
+
+    /**
+     * Usage limit (null if unlimited)
+     */
+    limit: number | null;
+
+    /**
+     * Formatted limit string (null if unlimited)
+     */
+    limitFormatted: string | null;
+
+    /**
+     * Usage percentage (0-100)
+     */
+    percentage: number;
+  }
+
+  interface ApiRequestsUsageInfo {
+    /**
+     * Requests used
+     */
+    used: number;
+
+    /**
+     * Requests limit (null if unlimited)
+     */
+    limit: number | null;
+
+    /**
+     * Usage percentage (0-100)
+     */
+    percentage: number;
+
+    /**
+     * Whether API requests are tracked
+     */
+    tracked: boolean;
+  }
+
+  /**
+   * Metrics module for usage statistics
+   */
+  class Metrics {
+    /**
+     * Get all usage metrics and statistics
+     */
+    get(): Promise<MetricsData>;
+
+    /**
+     * Get storage usage information
+     */
+    getStorageUsage(): Promise<UsageInfo>;
+
+    /**
+     * Get bandwidth usage information
+     */
+    getBandwidthUsage(): Promise<UsageInfo>;
+
+    /**
+     * Get API requests usage information
+     */
+    getApiRequestsUsage(): Promise<ApiRequestsUsageInfo>;
+
+    /**
+     * Get upload statistics
+     */
+    getUploadStats(): Promise<{ totalUploads: number; filesStored: number }>;
   }
 
   // ============================================================================

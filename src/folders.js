@@ -99,6 +99,24 @@ class Folders {
   }
 
   /**
+   * Move a folder to a different parent folder
+   * @param {string} folderId - Folder ID
+   * @param {string} [parentId] - New parent folder ID (empty string or 'root' for root)
+   * @returns {Promise<Object>} Updated folder
+   */
+  async move(folderId, parentId = "") {
+    if (!folderId) {
+      throw new ValidationError("Folder ID is required");
+    }
+
+    const response = await this.http.patch(`/v1/folders/${folderId}`, {
+      parentId: parentId === "root" ? "" : parentId,
+    });
+
+    return response.data.data;
+  }
+
+  /**
    * Delete a folder
    * @param {string} folderId - Folder ID
    * @param {Object} [options] - Delete options

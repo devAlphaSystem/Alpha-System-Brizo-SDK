@@ -88,6 +88,27 @@ class Files {
   }
 
   /**
+   * Rename a file
+   * @param {string} fileId - File ID
+   * @param {string} newName - New filename
+   * @returns {Promise<Object>} Updated file
+   */
+  async rename(fileId, newName) {
+    if (!fileId) {
+      throw new ValidationError("File ID is required");
+    }
+    if (!newName || !newName.trim()) {
+      throw new ValidationError("New filename is required");
+    }
+
+    const response = await this.http.patch(`/v1/files/${fileId}`, {
+      name: newName.trim(),
+    });
+
+    return response.data.data;
+  }
+
+  /**
    * Get a signed download URL for a file
    * @param {string} fileId - File ID
    * @returns {Promise<string>} Signed download URL
@@ -106,6 +127,27 @@ class Files {
     }
 
     throw new ValidationError("Failed to get download URL");
+  }
+
+  /**
+   * Get a signed streaming URL for a file (inline display)
+   * @param {string} fileId - File ID
+   * @returns {Promise<string>} Signed streaming URL
+   */
+  async getStreamUrl(fileId) {
+    if (!fileId) {
+      throw new ValidationError("File ID is required");
+    }
+
+    const response = await this.http.request("GET", `/v1/files/${fileId}/stream`, {
+      followRedirect: false,
+    });
+
+    if (response.headers?.location) {
+      return response.headers.location;
+    }
+
+    throw new ValidationError("Failed to get stream URL");
   }
 
   /**
