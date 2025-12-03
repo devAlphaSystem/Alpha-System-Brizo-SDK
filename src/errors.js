@@ -74,7 +74,7 @@ class RateLimitError extends BrizoError {
 }
 
 /**
- * Error thrown when storage/bandwidth limits are exceeded
+ * Error thrown when storage limits are exceeded
  */
 class LimitExceededError extends BrizoError {
   constructor(message, limitType = null) {

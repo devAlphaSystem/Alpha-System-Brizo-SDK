@@ -686,26 +686,6 @@ declare namespace Brizo {
     storageLimitRaw: number | null;
 
     /**
-     * Bandwidth used (formatted string)
-     */
-    bandwidthUsed: string;
-
-    /**
-     * Bandwidth limit (formatted string or null if unlimited)
-     */
-    bandwidthLimit: string | null;
-
-    /**
-     * Bandwidth used in bytes
-     */
-    bandwidthUsedRaw: number;
-
-    /**
-     * Bandwidth limit in bytes (null if unlimited)
-     */
-    bandwidthLimitRaw: number | null;
-
-    /**
      * API requests this month
      */
     apiRequests: number;
@@ -733,11 +713,6 @@ declare namespace Brizo {
      * Uploads chart data (last 30 days)
      */
     uploadsChartData: number[];
-
-    /**
-     * Bandwidth chart data in GB (last 30 days)
-     */
-    bandwidthChartData: number[];
 
     /**
      * Chart labels (dates)
@@ -807,11 +782,6 @@ declare namespace Brizo {
      * Get storage usage information
      */
     getStorageUsage(): Promise<UsageInfo>;
-
-    /**
-     * Get bandwidth usage information
-     */
-    getBandwidthUsage(): Promise<UsageInfo>;
 
     /**
      * Get API requests usage information
@@ -889,7 +859,7 @@ declare namespace Brizo {
   }
 
   /**
-   * Error thrown when storage/bandwidth limits are exceeded
+   * Error thrown when storage limits are exceeded
    */
   class LimitExceededError extends BrizoError {
     /**

@@ -13,7 +13,7 @@ class Metrics {
 
   /**
    * Get usage metrics and statistics
-   * @returns {Promise<Object>} Metrics data including storage, bandwidth, uploads, and chart data
+   * @returns {Promise<Object>} Metrics data including storage, uploads, and chart data
    */
   async get() {
     const response = await this.http.get("/v1/metrics");
@@ -32,21 +32,6 @@ class Metrics {
       limit: metrics.storageLimitRaw,
       limitFormatted: metrics.storageLimit,
       percentage: metrics.storageLimitRaw ? Math.round((metrics.storageUsedRaw / metrics.storageLimitRaw) * 100) : 0,
-    };
-  }
-
-  /**
-   * Get bandwidth usage information
-   * @returns {Promise<Object>} Bandwidth usage data
-   */
-  async getBandwidthUsage() {
-    const metrics = await this.get();
-    return {
-      used: metrics.bandwidthUsedRaw,
-      usedFormatted: metrics.bandwidthUsed,
-      limit: metrics.bandwidthLimitRaw,
-      limitFormatted: metrics.bandwidthLimit,
-      percentage: metrics.bandwidthLimitRaw ? Math.round((metrics.bandwidthUsedRaw / metrics.bandwidthLimitRaw) * 100) : 0,
     };
   }
 

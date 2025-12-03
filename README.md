@@ -441,7 +441,7 @@ console.log({
 
 ## Metrics
 
-Track storage usage, bandwidth, and API requests.
+Track storage usage and API requests.
 
 ### Get All Metrics
 
@@ -452,9 +452,7 @@ console.log({
   totalUploads: metrics.totalUploads,
   filesStored: metrics.filesStored,
   storageUsed: metrics.storageUsed,      // e.g., "2.5 GB"
-  storageLimit: metrics.storageLimit,    // e.g., "10 GB" or null if unlimited
-  bandwidthUsed: metrics.bandwidthUsed,  // e.g., "15.3 GB"
-  bandwidthLimit: metrics.bandwidthLimit,
+  storageLimit: metrics.storageLimit,    // e.g., "2 TB" or null if unlimited
   apiRequests: metrics.apiRequests,
   plan: metrics.plan                     // { id, slug, name }
 });
@@ -472,10 +470,6 @@ console.log({
   limitFormatted: storage.limitFormatted,
   percentage: storage.percentage   // 0-100
 });
-
-// Get bandwidth usage details
-const bandwidth = await brizo.metrics.getBandwidthUsage();
-console.log(bandwidth.percentage + '% of bandwidth used');
 
 // Get API requests usage
 const apiUsage = await brizo.metrics.getApiRequestsUsage();
@@ -515,7 +509,7 @@ try {
   } else if (error instanceof RateLimitError) {
     console.log('Rate limited, retry after:', error.retryAfter);
   } else if (error instanceof LimitExceededError) {
-    console.log('Storage/bandwidth limit exceeded');
+    console.log('Storage limit exceeded');
   } else if (error instanceof UploadError) {
     console.log('Upload failed:', error.details);
   } else if (error instanceof BrizoError) {
@@ -635,7 +629,6 @@ async function listImages(): Promise<File[]> {
 |--------|-------------|
 | `get()` | Get all metrics and statistics |
 | `getStorageUsage()` | Get storage usage details |
-| `getBandwidthUsage()` | Get bandwidth usage details |
 | `getApiRequestsUsage()` | Get API requests usage |
 | `getUploadStats()` | Get upload statistics |
 
