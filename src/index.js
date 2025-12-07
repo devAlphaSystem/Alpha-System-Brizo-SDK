@@ -2,14 +2,12 @@
  * Brizo SDK - Official Node.js SDK for Brizo Cloud Storage
  *
  * A simple, powerful SDK for integrating Brizo storage into your applications.
- * Features simplified file uploads (3 steps in 1 call), folder management,
- * and S3-compatible storage access.
+ * Features simplified file uploads (3 steps in 1 call) and folder management.
  */
 
 const HttpClient = require("./http");
 const Files = require("./files");
 const Folders = require("./folders");
-const S3Credentials = require("./s3credentials");
 const Metrics = require("./metrics");
 const { BrizoError, AuthenticationError, NotFoundError, ValidationError, RateLimitError, LimitExceededError, UploadError } = require("./errors");
 
@@ -56,7 +54,6 @@ class Brizo {
 
     this.files = new Files(this._http);
     this.folders = new Folders(this._http);
-    this.s3Credentials = new S3Credentials(this._http);
     this.metrics = new Metrics(this._http);
   }
 
@@ -86,7 +83,6 @@ class Brizo {
 
     this.files = new Files(this._http);
     this.folders = new Folders(this._http);
-    this.s3Credentials = new S3Credentials(this._http);
     this.metrics = new Metrics(this._http);
   }
 

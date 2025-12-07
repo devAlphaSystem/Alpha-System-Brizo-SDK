@@ -8,7 +8,6 @@ Official Node.js SDK for [Brizo](https://brizo-cloud.com) - Simple, powerful clo
 - **Folder Management** - Create, rename, delete folders with nested support
 - **Search & Filter** - Find files by name, type, or folder
 - **Batch Operations** - Upload multiple files with concurrency control
-- **S3 Compatible** - Use with AWS SDK for direct S3 access
 - **TypeScript Ready** - Full type definitions included
 - **Zero Dependencies** - Uses only Node.js built-in modules
 
@@ -59,9 +58,6 @@ console.log('Total files:', files.totalItems);
   - [Rename Folder](#rename-folder)
   - [Move Folder](#move-folder)
   - [Delete Folder](#delete-folder)
-- [S3 Compatibility](#s3-compatibility)
-  - [Create S3 Credentials](#create-s3-credentials)
-  - [Use with AWS SDK](#use-with-aws-sdk)
 - [Metrics](#metrics)
   - [Get All Metrics](#get-all-metrics)
   - [Usage Information](#usage-information)
@@ -368,77 +364,6 @@ await brizo.folders.delete('folder-id', {
 });
 ```
 
-## S3 Compatibility
-
-Brizo provides an S3-compatible API for direct storage access using standard S3 tools and SDKs.
-
-### Create S3 Credentials
-
-```javascript
-// Create credentials
-const creds = await brizo.s3Credentials.create({
-  name: 'My App Production'
-});
-
-console.log('Access Key:', creds.accessKeyId);
-console.log('Secret Key:', creds.secretAccessKey); // Save this! Only shown once
-
-// List credentials
-const allCreds = await brizo.s3Credentials.list();
-
-// Delete credentials
-await brizo.s3Credentials.delete('credential-id');
-```
-
-### Use with AWS SDK
-
-```javascript
-const { S3Client, PutObjectCommand, GetObjectCommand } = require('@aws-sdk/client-s3');
-
-// Get S3 configuration
-const s3Config = await brizo.s3Credentials.getS3Config({
-  accessKeyId: 'your-access-key-id',
-  secretAccessKey: 'your-secret-access-key'
-});
-
-// Create S3 client
-const s3 = new S3Client({
-  endpoint: s3Config.endpoint,
-  region: s3Config.region,
-  credentials: s3Config.credentials,
-  forcePathStyle: s3Config.forcePathStyle
-});
-
-// Upload a file
-await s3.send(new PutObjectCommand({
-  Bucket: s3Config.bucket,
-  Key: 'my-folder/my-file.txt',
-  Body: 'Hello, World!',
-  ContentType: 'text/plain'
-}));
-
-// Download a file
-const response = await s3.send(new GetObjectCommand({
-  Bucket: s3Config.bucket,
-  Key: 'my-folder/my-file.txt'
-}));
-
-const content = await response.Body.transformToString();
-console.log(content);
-```
-
-### Get Connection Info
-
-```javascript
-const info = await brizo.s3Credentials.getConnectionInfo();
-
-console.log({
-  endpoint: info.endpoint,
-  bucket: info.bucket,
-  region: info.region
-});
-```
-
 ## Metrics
 
 Track storage usage and API requests.
@@ -611,17 +536,6 @@ async function listImages(): Promise<File[]> {
 | `rename(folderId, name)` | Rename a folder |
 | `move(folderId, parentId?)` | Move folder to another parent |
 | `delete(folderId, options?)` | Delete a folder |
-
-### S3 Credentials Module (`brizo.s3Credentials`)
-
-| Method | Description |
-|--------|-------------|
-| `create(options?)` | Create S3 credentials |
-| `list()` | List all credentials |
-| `update(id, options)` | Rename credentials |
-| `delete(id)` | Delete credentials |
-| `getConnectionInfo()` | Get S3 endpoint info |
-| `getS3Config(credentials)` | Get AWS SDK config |
 
 ### Metrics Module (`brizo.metrics`)
 

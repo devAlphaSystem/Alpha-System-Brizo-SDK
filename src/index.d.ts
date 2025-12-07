@@ -26,11 +26,6 @@ declare class Brizo {
   readonly folders: Brizo.Folders;
 
   /**
-   * S3 Credentials module for S3-compatible access
-   */
-  readonly s3Credentials: Brizo.S3Credentials;
-
-  /**
    * Metrics module for usage statistics
    */
   readonly metrics: Brizo.Metrics;
@@ -392,121 +387,6 @@ declare namespace Brizo {
   }
 
   // ============================================================================
-  // S3 Credentials Types
-  // ============================================================================
-
-  interface S3Credential {
-    /**
-     * Credential ID
-     */
-    id: string;
-
-    /**
-     * Access Key ID
-     */
-    accessKeyId: string;
-
-    /**
-     * Credential name
-     */
-    name: string;
-
-    /**
-     * Creation timestamp
-     */
-    created: string;
-
-    /**
-     * Last used timestamp
-     */
-    lastUsed?: string;
-
-    /**
-     * Number of requests made
-     */
-    requestCount: number;
-  }
-
-  interface S3CredentialWithSecret extends S3Credential {
-    /**
-     * Secret Access Key (only shown once at creation)
-     */
-    secretAccessKey: string;
-  }
-
-  interface CreateS3CredentialOptions {
-    /**
-     * Credential name
-     * @default 'Unnamed'
-     */
-    name?: string;
-  }
-
-  interface UpdateS3CredentialOptions {
-    /**
-     * New credential name
-     */
-    name: string;
-  }
-
-  interface S3ConnectionInfo {
-    /**
-     * S3-compatible endpoint URL
-     */
-    endpoint: string;
-
-    /**
-     * Bucket name
-     */
-    bucket: string;
-
-    /**
-     * Region
-     */
-    region: string;
-
-    /**
-     * Whether to use path-style URLs
-     */
-    forcePathStyle: boolean;
-
-    /**
-     * Additional info
-     */
-    info: string;
-  }
-
-  interface S3ClientConfig {
-    /**
-     * S3-compatible endpoint URL
-     */
-    endpoint: string;
-
-    /**
-     * Region
-     */
-    region: string;
-
-    /**
-     * AWS credentials
-     */
-    credentials: {
-      accessKeyId: string;
-      secretAccessKey: string;
-    };
-
-    /**
-     * Whether to use path-style URLs
-     */
-    forcePathStyle: boolean;
-
-    /**
-     * Bucket name
-     */
-    bucket: string;
-  }
-
-  // ============================================================================
   // Module Classes
   // ============================================================================
 
@@ -613,41 +493,6 @@ declare namespace Brizo {
      * Create folder path (creates all parent folders if needed)
      */
     createPath(path: string): Promise<Folder>;
-  }
-
-  /**
-   * S3 Credentials module for S3-compatible access
-   */
-  class S3Credentials {
-    /**
-     * List all S3 credentials
-     */
-    list(): Promise<S3Credential[]>;
-
-    /**
-     * Create new S3 credentials
-     */
-    create(options?: CreateS3CredentialOptions): Promise<S3CredentialWithSecret>;
-
-    /**
-     * Update S3 credentials (rename)
-     */
-    update(credentialId: string, options: UpdateS3CredentialOptions): Promise<S3Credential>;
-
-    /**
-     * Delete S3 credentials
-     */
-    delete(credentialId: string): Promise<{ status: string; message: string }>;
-
-    /**
-     * Get S3 connection information
-     */
-    getConnectionInfo(): Promise<S3ConnectionInfo>;
-
-    /**
-     * Get S3 client configuration for AWS SDK
-     */
-    getS3Config(credentials: { accessKeyId: string; secretAccessKey: string }): Promise<S3ClientConfig>;
   }
 
   // ============================================================================
