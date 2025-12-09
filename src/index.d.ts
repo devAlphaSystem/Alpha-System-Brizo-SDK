@@ -374,6 +374,47 @@ declare namespace Brizo {
     deleteContents?: boolean;
   }
 
+  interface ListSharedFoldersOptions {
+    /**
+     * Page number
+     * @default 1
+     */
+    page?: number;
+
+    /**
+     * Items per page (max 100)
+     * @default 20
+     */
+    perPage?: number;
+  }
+
+  interface PaginatedFolders {
+    /**
+     * Current page number
+     */
+    page: number;
+
+    /**
+     * Items per page
+     */
+    perPage: number;
+
+    /**
+     * Total number of items
+     */
+    totalItems: number;
+
+    /**
+     * Total number of pages
+     */
+    totalPages: number;
+
+    /**
+     * Array of folder items
+     */
+    items: Folder[];
+  }
+
   interface FolderPathSegment {
     /**
      * Folder ID
@@ -443,6 +484,11 @@ declare namespace Brizo {
      * Get a streaming URL for a file (inline display)
      */
     getStreamUrl(fileId: string): Promise<string>;
+
+    /**
+     * Toggle file sharing
+     */
+    toggleShare(fileId: string, isShared: boolean): Promise<File>;
   }
 
   /**
@@ -493,6 +539,16 @@ declare namespace Brizo {
      * Create folder path (creates all parent folders if needed)
      */
     createPath(path: string): Promise<Folder>;
+
+    /**
+     * Toggle folder sharing
+     */
+    toggleShare(folderId: string, isShared: boolean): Promise<Folder>;
+
+    /**
+     * List shared folders
+     */
+    listShared(options?: ListSharedFoldersOptions): Promise<PaginatedFolders>;
   }
 
   // ============================================================================

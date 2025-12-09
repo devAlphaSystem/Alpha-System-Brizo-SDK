@@ -51,6 +51,7 @@ console.log('Total files:', files.totalItems);
   - [Delete File](#delete-file)
   - [Get Download URL](#get-download-url)
   - [Get Stream URL](#get-stream-url)
+  - [Toggle File Sharing](#toggle-file-sharing)
 - [Folders](#folders)
   - [Create Folder](#create-folder)
   - [Create Folder Path](#create-folder-path)
@@ -58,6 +59,8 @@ console.log('Total files:', files.totalItems);
   - [Rename Folder](#rename-folder)
   - [Move Folder](#move-folder)
   - [Delete Folder](#delete-folder)
+  - [Toggle Folder Sharing](#toggle-folder-sharing)
+  - [List Shared Folders](#list-shared-folders)
 - [Metrics](#metrics)
   - [Get All Metrics](#get-all-metrics)
   - [Usage Information](#usage-information)
@@ -282,6 +285,17 @@ if (shareUrl) {
 }
 ```
 
+### Toggle File Sharing
+
+```javascript
+// Enable sharing
+const file = await brizo.files.toggleShare('file-id', true);
+console.log('Share URL:', file.shareUrl);
+
+// Disable sharing
+await brizo.files.toggleShare('file-id', false);
+```
+
 ## Folders
 
 ### Create Folder
@@ -362,6 +376,34 @@ await brizo.folders.delete('folder-id');
 await brizo.folders.delete('folder-id', {
   deleteContents: true
 });
+```
+
+### Toggle Folder Sharing
+
+```javascript
+// Enable sharing
+const folder = await brizo.folders.toggleShare('folder-id', true);
+console.log('Share URL:', folder.shareUrl);
+
+// Disable sharing
+await brizo.folders.toggleShare('folder-id', false);
+```
+
+### List Shared Folders
+
+```javascript
+// List all shared folders (paginated)
+const sharedFolders = await brizo.folders.listShared();
+
+// With pagination options
+const sharedFolders = await brizo.folders.listShared({
+  page: 1,
+  perPage: 50
+});
+
+for (const folder of sharedFolders.items) {
+  console.log(folder.name, folder.shareUrl);
+}
 ```
 
 ## Metrics
@@ -522,6 +564,7 @@ async function listImages(): Promise<File[]> {
 | `getDownloadUrl(fileId)` | Get download URL |
 | `getStreamUrl(fileId)` | Get streaming URL (inline display) |
 | `getShareUrl(file)` | Get public share URL |
+| `toggleShare(fileId, isShared)` | Toggle file sharing |
 
 ### Folders Module (`brizo.folders`)
 
@@ -531,11 +574,13 @@ async function listImages(): Promise<File[]> {
 | `createPath(path)` | Create nested folders |
 | `list(options?)` | List folders |
 | `listAll(parentId?)` | List all folders recursively |
+| `listShared(options?)` | List shared folders |
 | `get(folderId)` | Get folder info |
 | `getPath(folderId)` | Get folder breadcrumb |
 | `rename(folderId, name)` | Rename a folder |
 | `move(folderId, parentId?)` | Move folder to another parent |
 | `delete(folderId, options?)` | Delete a folder |
+| `toggleShare(folderId, isShared)` | Toggle folder sharing |
 
 ### Metrics Module (`brizo.metrics`)
 

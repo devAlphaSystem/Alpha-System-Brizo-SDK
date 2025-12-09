@@ -138,6 +138,42 @@ class Folders {
   }
 
   /**
+   * Toggle folder sharing
+   * @param {string} folderId - Folder ID
+   * @param {boolean} isShared - Whether the folder should be shared
+   * @returns {Promise<Object>} Updated folder
+   */
+  async toggleShare(folderId, isShared) {
+    if (!folderId) {
+      throw new ValidationError("Folder ID is required");
+    }
+
+    const response = await this.http.patch(`/v1/shared-folders/${folderId}/share`, {
+      isShared: Boolean(isShared),
+    });
+
+    return response.data.data;
+  }
+
+  /**
+   * List shared folders
+   * @param {Object} [options] - List options
+   * @param {number} [options.page=1] - Page number
+   * @param {number} [options.perPage=20] - Items per page (max 100)
+   * @returns {Promise<Object>} Paginated list of shared folders
+   */
+  async listShared(options = {}) {
+    const response = await this.http.get("/v1/shared-folders", {
+      query: {
+        page: options.page || 1,
+        perPage: options.perPage || 20,
+      },
+    });
+
+    return response.data.data;
+  }
+
+  /**
    * List all folders recursively
    * @param {string} [parentId] - Parent folder ID (empty for root)
    * @returns {Promise<Array>} Flat array of all folders with their paths
