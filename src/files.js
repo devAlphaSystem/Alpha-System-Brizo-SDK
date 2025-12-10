@@ -319,24 +319,6 @@ class Files {
   }
 
   /**
-   * Toggle file sharing
-   * @param {string} fileId - File ID
-   * @param {boolean} isShared - Whether the file should be shared
-   * @returns {Promise<Object>} Updated file
-   */
-  async toggleShare(fileId, isShared) {
-    if (!fileId) {
-      throw new ValidationError("File ID is required");
-    }
-
-    const response = await this.http.patch(`/v1/files/${fileId}/share`, {
-      isShared: Boolean(isShared),
-    });
-
-    return response.data.data;
-  }
-
-  /**
    * Get MIME type from filename
    * @private
    */

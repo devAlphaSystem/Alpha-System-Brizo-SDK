@@ -154,6 +154,16 @@ declare namespace Brizo {
     shareUrl?: string | null;
 
     /**
+     * Whether the file is shared publicly
+     */
+    isShared: boolean;
+
+    /**
+     * Whether the file is marked as favorite
+     */
+    isFavorite: boolean;
+
+    /**
      * Creation timestamp
      */
     created: string;
@@ -313,6 +323,21 @@ declare namespace Brizo {
     parent: string;
 
     /**
+     * Public share ID (if available)
+     */
+    publicId?: string | null;
+
+    /**
+     * Public share URL (if available)
+     */
+    shareUrl?: string | null;
+
+    /**
+     * Whether the folder is shared publicly
+     */
+    isShared: boolean;
+
+    /**
      * Creation timestamp
      */
     created: string;
@@ -372,47 +397,6 @@ declare namespace Brizo {
      * @default false
      */
     deleteContents?: boolean;
-  }
-
-  interface ListSharedFoldersOptions {
-    /**
-     * Page number
-     * @default 1
-     */
-    page?: number;
-
-    /**
-     * Items per page (max 100)
-     * @default 20
-     */
-    perPage?: number;
-  }
-
-  interface PaginatedFolders {
-    /**
-     * Current page number
-     */
-    page: number;
-
-    /**
-     * Items per page
-     */
-    perPage: number;
-
-    /**
-     * Total number of items
-     */
-    totalItems: number;
-
-    /**
-     * Total number of pages
-     */
-    totalPages: number;
-
-    /**
-     * Array of folder items
-     */
-    items: Folder[];
   }
 
   interface FolderPathSegment {
@@ -484,11 +468,6 @@ declare namespace Brizo {
      * Get a streaming URL for a file (inline display)
      */
     getStreamUrl(fileId: string): Promise<string>;
-
-    /**
-     * Toggle file sharing
-     */
-    toggleShare(fileId: string, isShared: boolean): Promise<File>;
   }
 
   /**
@@ -541,14 +520,9 @@ declare namespace Brizo {
     createPath(path: string): Promise<Folder>;
 
     /**
-     * Toggle folder sharing
+     * Get public share URL for a folder
      */
-    toggleShare(folderId: string, isShared: boolean): Promise<Folder>;
-
-    /**
-     * List shared folders
-     */
-    listShared(options?: ListSharedFoldersOptions): Promise<PaginatedFolders>;
+    getShareUrl(folder: Folder): string | null;
   }
 
   // ============================================================================
@@ -716,14 +690,14 @@ declare namespace Brizo {
     /**
      * Additional error details
      */
-    details: any;
+    details: unknown;
 
-    constructor(message: string, statusCode?: number | null, code?: string | null, details?: any);
+    constructor(message: string, statusCode?: number | null, code?: string | null, details?: unknown);
 
     /**
      * Create error from API response
      */
-    static fromResponse(response: Response, body?: any): BrizoError;
+    static fromResponse(response: Response, body?: unknown): BrizoError;
   }
 
   /**
@@ -744,7 +718,7 @@ declare namespace Brizo {
    * Error thrown when validation fails
    */
   class ValidationError extends BrizoError {
-    constructor(message: string, details?: any);
+    constructor(message: string, details?: unknown);
   }
 
   /**
@@ -775,7 +749,7 @@ declare namespace Brizo {
    * Error thrown when upload fails
    */
   class UploadError extends BrizoError {
-    constructor(message: string, details?: any);
+    constructor(message: string, details?: unknown);
   }
 
   /**
