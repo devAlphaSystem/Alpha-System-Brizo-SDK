@@ -4,8 +4,83 @@
  */
 
 const fs = require("node:fs");
+const fsPromises = require("node:fs/promises");
 const path = require("node:path");
 const { UploadError, ValidationError } = require("./errors");
+
+const MIME_TYPES = Object.freeze({
+  jpg: "image/jpeg",
+  jpeg: "image/jpeg",
+  png: "image/png",
+  gif: "image/gif",
+  webp: "image/webp",
+  svg: "image/svg+xml",
+  ico: "image/x-icon",
+  bmp: "image/bmp",
+  tiff: "image/tiff",
+  tif: "image/tiff",
+  pdf: "application/pdf",
+  doc: "application/msword",
+  docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  xls: "application/vnd.ms-excel",
+  xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+  ppt: "application/vnd.ms-powerpoint",
+  pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+  odt: "application/vnd.oasis.opendocument.text",
+  ods: "application/vnd.oasis.opendocument.spreadsheet",
+  txt: "text/plain",
+  html: "text/html",
+  htm: "text/html",
+  css: "text/css",
+  csv: "text/csv",
+  xml: "text/xml",
+  md: "text/markdown",
+  js: "application/javascript",
+  mjs: "application/javascript",
+  json: "application/json",
+  ts: "text/typescript",
+  py: "text/x-python",
+  rb: "text/x-ruby",
+  java: "text/x-java",
+  c: "text/x-c",
+  cpp: "text/x-c++",
+  h: "text/x-c",
+  hpp: "text/x-c++",
+  go: "text/x-go",
+  rs: "text/x-rust",
+  php: "application/x-php",
+  sh: "application/x-sh",
+  yaml: "text/yaml",
+  yml: "text/yaml",
+  mp3: "audio/mpeg",
+  wav: "audio/wav",
+  ogg: "audio/ogg",
+  m4a: "audio/mp4",
+  flac: "audio/flac",
+  aac: "audio/aac",
+  mp4: "video/mp4",
+  webm: "video/webm",
+  avi: "video/x-msvideo",
+  mov: "video/quicktime",
+  mkv: "video/x-matroska",
+  wmv: "video/x-ms-wmv",
+  zip: "application/zip",
+  rar: "application/x-rar-compressed",
+  "7z": "application/x-7z-compressed",
+  tar: "application/x-tar",
+  gz: "application/gzip",
+  bz2: "application/x-bzip2",
+  woff: "font/woff",
+  woff2: "font/woff2",
+  ttf: "font/ttf",
+  otf: "font/otf",
+  eot: "application/vnd.ms-fontobject",
+  exe: "application/x-msdownload",
+  dll: "application/x-msdownload",
+  dmg: "application/x-apple-diskimage",
+  iso: "application/x-iso9660-image",
+  apk: "application/vnd.android.package-archive",
+});
 
 class Files {
   /**
@@ -177,15 +252,18 @@ class Files {
     if (typeof options.file === "string") {
       const filePath = options.file;
 
-      if (!fs.existsSync(filePath)) {
-        throw new ValidationError(`File not found: ${filePath}`);
+      try {
+        const stats = await fsPromises.stat(filePath);
+        size = stats.size;
+        filename = options.filename || path.basename(filePath);
+        mimeType = options.mimeType || this._getMimeType(filename);
+        fileBuffer = await fsPromises.readFile(filePath);
+      } catch (err) {
+        if (err.code === "ENOENT") {
+          throw new ValidationError(`File not found: ${filePath}`);
+        }
+        throw err;
       }
-
-      const stats = fs.statSync(filePath);
-      size = stats.size;
-      filename = options.filename || path.basename(filePath);
-      mimeType = options.mimeType || this._getMimeType(filename);
-      fileBuffer = fs.readFileSync(filePath);
     } else if (Buffer.isBuffer(options.file)) {
       fileBuffer = options.file;
       size = fileBuffer.length;
@@ -324,89 +402,7 @@ class Files {
    */
   _getMimeType(filename) {
     const ext = path.extname(filename).toLowerCase().slice(1);
-    const mimeTypes = {
-      jpg: "image/jpeg",
-      jpeg: "image/jpeg",
-      png: "image/png",
-      gif: "image/gif",
-      webp: "image/webp",
-      svg: "image/svg+xml",
-      ico: "image/x-icon",
-      bmp: "image/bmp",
-      tiff: "image/tiff",
-      tif: "image/tiff",
-
-      pdf: "application/pdf",
-      doc: "application/msword",
-      docx: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-      xls: "application/vnd.ms-excel",
-      xlsx: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-      ppt: "application/vnd.ms-powerpoint",
-      pptx: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      odt: "application/vnd.oasis.opendocument.text",
-      ods: "application/vnd.oasis.opendocument.spreadsheet",
-
-      txt: "text/plain",
-      html: "text/html",
-      htm: "text/html",
-      css: "text/css",
-      csv: "text/csv",
-      xml: "text/xml",
-      md: "text/markdown",
-
-      js: "application/javascript",
-      mjs: "application/javascript",
-      json: "application/json",
-      ts: "text/typescript",
-      py: "text/x-python",
-      rb: "text/x-ruby",
-      java: "text/x-java",
-      c: "text/x-c",
-      cpp: "text/x-c++",
-      h: "text/x-c",
-      hpp: "text/x-c++",
-      go: "text/x-go",
-      rs: "text/x-rust",
-      php: "application/x-php",
-      sh: "application/x-sh",
-      yaml: "text/yaml",
-      yml: "text/yaml",
-
-      mp3: "audio/mpeg",
-      wav: "audio/wav",
-      ogg: "audio/ogg",
-      m4a: "audio/mp4",
-      flac: "audio/flac",
-      aac: "audio/aac",
-
-      mp4: "video/mp4",
-      webm: "video/webm",
-      avi: "video/x-msvideo",
-      mov: "video/quicktime",
-      mkv: "video/x-matroska",
-      wmv: "video/x-ms-wmv",
-
-      zip: "application/zip",
-      rar: "application/x-rar-compressed",
-      "7z": "application/x-7z-compressed",
-      tar: "application/x-tar",
-      gz: "application/gzip",
-      bz2: "application/x-bzip2",
-
-      woff: "font/woff",
-      woff2: "font/woff2",
-      ttf: "font/ttf",
-      otf: "font/otf",
-      eot: "application/vnd.ms-fontobject",
-
-      exe: "application/x-msdownload",
-      dll: "application/x-msdownload",
-      dmg: "application/x-apple-diskimage",
-      iso: "application/x-iso9660-image",
-      apk: "application/vnd.android.package-archive",
-    };
-
-    return mimeTypes[ext] || "application/octet-stream";
+    return MIME_TYPES[ext] || "application/octet-stream";
   }
 }
 

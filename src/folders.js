@@ -140,26 +140,39 @@ class Folders {
   /**
    * List all folders recursively
    * @param {string} [parentId] - Parent folder ID (empty for root)
+   * @param {Object} [options] - Options
+   * @param {number} [options.maxConcurrency=5] - Max concurrent requests
+   * @param {number} [options.maxDepth=20] - Max recursion depth
    * @returns {Promise<Array>} Flat array of all folders with their paths
    */
-  async listAll(parentId = "") {
+  async listAll(parentId = "", options = {}) {
+    const maxConcurrency = options.maxConcurrency || 5;
+    const maxDepth = options.maxDepth || 20;
     const allFolders = [];
     const errors = [];
 
-    const fetchRecursive = async (parent, pathPrefix = []) => {
+    const fetchRecursive = async (parent, pathPrefix = [], depth = 0) => {
+      if (depth >= maxDepth) return;
+
       try {
         const result = await this.list({ parentId: parent });
         const folders = result.items || [];
 
-        for (const folder of folders) {
-          const folderWithPath = {
-            ...folder,
-            path: [...pathPrefix, folder.name],
-            pathString: [...pathPrefix, folder.name].join("/"),
-          };
-          allFolders.push(folderWithPath);
+        const foldersWithPaths = folders.map((folder) => ({
+          ...folder,
+          path: [...pathPrefix, folder.name],
+          pathString: [...pathPrefix, folder.name].join("/"),
+        }));
 
-          await fetchRecursive(folder.id, folderWithPath.path);
+        allFolders.push(...foldersWithPaths);
+
+        const chunks = [];
+        for (let i = 0; i < foldersWithPaths.length; i += maxConcurrency) {
+          chunks.push(foldersWithPaths.slice(i, i + maxConcurrency));
+        }
+
+        for (const chunk of chunks) {
+          await Promise.all(chunk.map((f) => fetchRecursive(f.id, f.path, depth + 1)));
         }
       } catch (error) {
         errors.push({ parentId: parent, error: error.message });

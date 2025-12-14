@@ -1,6 +1,6 @@
 {
   "name": "@alphasystem/brizo",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Official Brizo SDK for Node.js - Simple cloud storage integration",
   "main": "src/index.js",
   "types": "src/index.d.ts",

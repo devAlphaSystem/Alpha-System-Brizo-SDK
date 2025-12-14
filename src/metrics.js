@@ -9,15 +9,38 @@ class Metrics {
    */
   constructor(httpClient) {
     this.http = httpClient;
+    this._cache = null;
+    this._cacheExpiry = 0;
+    this._cacheTTL = 5000;
+  }
+
+  /**
+   * Invalidate the metrics cache
+   */
+  invalidateCache() {
+    this._cache = null;
+    this._cacheExpiry = 0;
   }
 
   /**
    * Get usage metrics and statistics
+   * @param {Object} [options] - Options
+   * @param {boolean} [options.useCache=true] - Whether to use cached data
    * @returns {Promise<Object>} Metrics data including storage, uploads, and chart data
    */
-  async get() {
+  async get(options = {}) {
+    const useCache = options.useCache !== false;
+    const now = Date.now();
+
+    if (useCache && this._cache && now < this._cacheExpiry) {
+      return this._cache;
+    }
+
     const response = await this.http.get("/v1/metrics");
-    return response.data.data;
+    this._cache = response.data.data;
+    this._cacheExpiry = now + this._cacheTTL;
+
+    return this._cache;
   }
 
   /**

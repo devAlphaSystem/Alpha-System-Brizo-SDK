@@ -1,7 +1,23 @@
 const https = require("node:https");
 const http = require("node:http");
+const zlib = require("node:zlib");
 const { URL } = require("node:url");
 const { BrizoError, AuthenticationError, NotFoundError, ValidationError, RateLimitError, LimitExceededError } = require("./errors");
+
+const httpsAgent = new https.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 50,
+  maxFreeSockets: 10,
+  timeout: 60000,
+});
+
+const httpAgent = new http.Agent({
+  keepAlive: true,
+  keepAliveMsecs: 30000,
+  maxSockets: 50,
+  maxFreeSockets: 10,
+});
 
 /**
  * HTTP client for making API requests
@@ -21,6 +37,7 @@ class HttpClient {
     this.timeout = config.timeout || 30000;
     this.defaultHeaders = {
       "Content-Type": "application/json",
+      "Accept-Encoding": "gzip, deflate",
       "X-API-Key": config.apiKey,
       ...config.headers,
     };
@@ -66,19 +83,29 @@ class HttpClient {
       path: url.pathname + url.search,
       headers,
       timeout: options.timeout || this.timeout,
+      agent: url.protocol === "https:" ? httpsAgent : httpAgent,
     };
 
     return new Promise((resolve, reject) => {
       const client = url.protocol === "https:" ? https : http;
 
       const req = client.request(requestOptions, (res) => {
-        let data = "";
+        const chunks = [];
 
-        res.on("data", (chunk) => {
-          data += chunk;
+        let stream = res;
+        const encoding = res.headers["content-encoding"];
+        if (encoding === "gzip") {
+          stream = res.pipe(zlib.createGunzip());
+        } else if (encoding === "deflate") {
+          stream = res.pipe(zlib.createInflate());
+        }
+
+        stream.on("data", (chunk) => {
+          chunks.push(chunk);
         });
 
-        res.on("end", () => {
+        stream.on("end", () => {
+          const data = Buffer.concat(chunks).toString("utf8");
           let parsedData;
           try {
             parsedData = data ? JSON.parse(data) : {};
@@ -97,6 +124,10 @@ class HttpClient {
             headers: res.headers,
             data: parsedData,
           });
+        });
+
+        stream.on("error", (error) => {
+          reject(new BrizoError(`Decompression failed: ${error.message}`, null, "DECOMPRESSION_ERROR"));
         });
       });
 
@@ -191,19 +222,21 @@ class HttpClient {
       path: url.pathname + url.search,
       headers,
       timeout: timeout || this.timeout,
+      agent: url.protocol === "https:" ? httpsAgent : httpAgent,
     };
 
     return new Promise((resolve, reject) => {
       const client = url.protocol === "https:" ? https : http;
 
       const req = client.request(requestOptions, (res) => {
-        let responseData = "";
+        const chunks = [];
 
         res.on("data", (chunk) => {
-          responseData += chunk;
+          chunks.push(chunk);
         });
 
         res.on("end", () => {
+          const responseData = Buffer.concat(chunks).toString("utf8");
           if (res.statusCode >= 400) {
             reject(new BrizoError(`Upload failed with status ${res.statusCode}`, res.statusCode, "UPLOAD_ERROR"));
             return;
